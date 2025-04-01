@@ -53,12 +53,32 @@ accountVerified:{
         public_id:String,
         url:String,
     },
-    verificationCode:Number,
+    c:Number,
     verificationCodeExpire:Date,
     resetPassword:String,
     resetPasswordExpire:Data,
 
 }, { timestamps: true });  // Adds createdAt & updatedAt automatically
+
+
+//generate the verification code\
+
+userSchema.methods.generateVerificationCode = function(){
+    function generateRandomFiveDigitNumber(){
+        const firstDigit= Math.floor(Math.random() *9)+1;
+        const remainingDigits = Math.floor(Math.random()*1000).toString().padStart(4,0)
+        
+        return parseInt(firstDigit + remainingDigits)
+    } 
+    const verificationCode = generateRandomFiveDigitNumber();
+    this.verificationCode = verificationCode;
+    this.verificationCodeExpire = Date.now()+15*60*1000;
+    return verificationCode;
+
+}
+
+
+
 
 // Hash password before saving the user
 userSchema.pre("save", async function (next) {
