@@ -1,0 +1,55 @@
+# Node.js dependencies
+node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables
+.env
+
+# Logs
+logs/
+*.log
+logfile
+debug.log
+
+# Cache files
+.cache/
+.cache-loader/
+.npm/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Build files
+dist/
+build/
+.out/
+coverage/
+
+# MongoDB & Mongoose related
+dump/
+*.seed
+
+# Multer & Express-fileupload (uploaded files)
+uploads/
+tmp/
+
+# Cloudinary temporary files
+cloudinary_temp/
+
+# Debugging files
+*.bak
+*.orig
+
+# JWT authentication (optional)
+*.jwt
+
+

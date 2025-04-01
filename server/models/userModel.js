@@ -20,6 +20,12 @@ const userSchema = new mongoose.Schema({
         required: [true, "Password is required"],
         minlength: [6, "Password must be at least 6 characters"]
     },
+    phoneNumber: {
+        type: String,
+        required: true,
+        unique: true,
+        match: [/^\+?[1-9]\d{1,14}$/, "Invalid phone number format"] // E.164 validation
+    },
     role:{
         type:String,
         enum:["Admin","User"],
