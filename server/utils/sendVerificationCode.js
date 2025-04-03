@@ -1,24 +1,29 @@
 import { generateVerificationOtpEmailTemplate } from "./emailTemplate.js";
 
-export async function sendVerificationCode(verificationCode , email, res){
+export async function sendVerificationCode({ verificationCode, email, res }) {
     try {
         const message = generateVerificationOtpEmailTemplate(verificationCode);
-        sendEmail({
+        console.log(verificationCode);
+
+        // ✅ Await the email sending function
+        await sendEmail({
             email,
-            subject:"verification Code ( book worm Library managemebnt system",
+            subject: "Verification Code (Book Worm Library Management System)",
             message,
         });
 
-        res.status(200).json({
-            success:true,
-            message:"verificartion cod esent successfully"
-        })
-        
+        return res.status(200).json({
+            success: true,
+            message: "Verification code sent successfully",
+        });
+
     } catch (error) {
-        return res.status(500).json({
-            success:false,
-            message:"verification code is faild"
-        })
-        
+        // ✅ Check if headers were already sent before responding
+        if (!res.headersSent) {
+            return res.status(500).json({
+                success: false,
+                message: "Verification code sending failed",
+            });
+        }
     }
 }

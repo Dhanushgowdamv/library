@@ -26,58 +26,48 @@ const userSchema = new mongoose.Schema({
         unique: true,
         match: [/^\+?[1-9]\d{1,14}$/, "Invalid phone number format"] // E.164 validation
     },
-    role:{
-        type:String,
-        enum:["Admin","User"],
-        default:"User"
+    role: {
+        type: String,
+        enum: ["Admin", "User"],
+        default: "User"
     },
-
-accountVerified:{
-    type:Boolean ,  default:false},
-    borrowedBooks:[
+    accountVerified: {
+        type: Boolean,
+        default: false
+    },
+    borrowedBooks: [
         {
-            bookId:{
-            type:mongoose.Schema.Types.ObjectId,
-            ref:"Borrow"
+            bookId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Borrow"
             },
-            returned:{
-                type:Boolean,
-                default:false,
+            returned: {
+                type: Boolean,
+                default: false
             },
-            bookTitle : String,
-            borrowedDate:Date,
-            dueDate:Date,
-        },
+            bookTitle: String,
+            borrowedDate: Date,
+            dueDate: Date
+        }
     ],
-    avatar:{
-        public_id:String,
-        url:String,
+    avatar: {
+        public_id: String,
+        url: String
     },
-    c:Number,
-    verificationCodeExpire:Date,
-    resetPassword:String,
-    resetPasswordExpire:Data,
+    verificationCode: { type: Number },  // ✅ Added this field
+    verificationCodeExpire: Date,
+    resetPassword: String,
+    resetPasswordExpire: Date
 
 }, { timestamps: true });  // Adds createdAt & updatedAt automatically
 
-
-//generate the verification code\
-
-userSchema.methods.generateVerificationCode = function(){
-    function generateRandomFiveDigitNumber(){
-        const firstDigit= Math.floor(Math.random() *9)+1;
-        const remainingDigits = Math.floor(Math.random()*1000).toString().padStart(4,0)
-        
-        return parseInt(firstDigit + remainingDigits)
-    } 
-    const verificationCode = generateRandomFiveDigitNumber();
-    this.verificationCode = verificationCode;
-    this.verificationCodeExpire = Date.now()+15*60*1000;
-    return verificationCode;
-
-}
-
-
+// Generate the verification code
+userSchema.methods.generateVerificationCode = function () {
+    this.verificationCode = Math.floor(10000 + Math.random() * 90000); // Always 5-digit number
+    this.verificationCodeExpire = Date.now() + 15 * 60 * 1000; // Expires in 15 mins
+    return this.verificationCode;
+    
+};
 
 
 // Hash password before saving the user

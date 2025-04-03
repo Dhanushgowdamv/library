@@ -1,77 +1,57 @@
 import ErrorHandler from "../middlewares/errorMiddleware.js";
-import {User} from"../models/userModel.js"
-import bcrypt from "bcrypt"
-import crypto from "crypto"
+import User from "../models/userModel.js";
+import { catchAsyncErrors } from "../middlewares/catchAsync.js";
 import { sendVerificationCode } from "../utils/sendVerificationCode.js";
 
-export const register = catchAsyncErrors(async(req, resizeBy, next)=>{
- try {
-    const {name, email, password, phoneNumber} = req.body;
-         if(!name || !email || !password || !phoneNumber){
-             return next(new ErrorHandler ("please enter all the fields ",400));
-         }
+export const register = catchAsyncErrors(async (req, res, next) => {
+    try {
+        const { name, email, password, phoneNumber } = req.body;
 
-         const isRegistered = await User.findOne({email , accountVerified:true});
-         if(isRegistered){
-            return next(new ErrorHandler("user already exists",400))
-         }
-
-
-        const registetrationAttemptByUser = await User.find({
-            email,
-            accountVerified:false,
-        });
-
-
-        if(registetrationAttemptByUser.length >=5){
-            return  next(
-                new ErrorHandler(
-                    "you have exceed the number of asttempts  please contact support",
-                    400
-                )
-            )
+        if (!name || !email || !password || !phoneNumber) {
+            return next(new ErrorHandler("Please enter all the fields.", 400));
         }
 
-
-        if(password.length < 8 || password.length >16){
-            return  next (
-                new ErrorHandler("Password must be between 8 to 16 characters.")
-            )
+        // Check if the email is already registered & verified
+        const isRegistered = await User.findOne({ email, accountVerified: true });
+        if (isRegistered) {
+            return next(new ErrorHandler("User already exists", 400));
         }
-     
+
+        // Check if the user has tried to register too many times
+        const registrationAttempts = await User.find({ email, accountVerified: false });
+        if (registrationAttempts.length >= 5) {
+            return next(new ErrorHandler("You have exceeded the number of attempts. Please contact support.", 400));
+        }
+
+        // Validate password length
+        if (password.length < 8 || password.length > 16) {
+            return next(new ErrorHandler("Password must be between 8 to 16 characters.", 400));
+        }
+
+        // Create a new user
         const user = await User.create({
             name,
             email,
-            password:this.password,
-        })
+            password,
+            phoneNumber,
+        });
 
-        const verificationCode = await User.generateVerificationCode();
+        // Generate verification code
+        const verificationCode = await user.generateVerificationCode();
         await user.save();
-        sendVerificationCode(verificationCode,email, res)
 
-        //  used for the fourther implemnantation
-        // function validatePassword(password) {
-        //     // Check length
-        //     if (password.length < 8 || password.length > 16) {
-        //         return "Password must be between 8 to 16 characters.";
-        //     }
-        
-        //     // Regex to check password complexity
-        //     const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/;
-        
-        //     if (!passwordRegex.test(password)) {
-        //         return "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character (@, $, !, %, *, ?, &).";
-        //     }
-        
-        //     return "Password is valid!";
-        // }
+        // Send verification code via email
+        await sendVerificationCode({ verificationCode, email, res });
 
+        // Send success response
+        res.status(201).json({
+            success: true,
+            message: "User registered successfully. Verification code sent.",
+            userId: user._id,
+        });
 
- } catch (error) {
+    } catch (error) {
+        return next(error);
+    }
+});
 
-    next(error);
-    
- }
-
-
-})
